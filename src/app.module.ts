@@ -1,4 +1,4 @@
-import { Module, ValidationPipe } from '@nestjs/common';
+import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -7,6 +7,8 @@ import { ReportsModule } from './reports/reports.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './users/user.entity';
 import { Report } from './reports/report.entity';
+
+const cookieSession = require('cookie-session');
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { Report } from './reports/report.entity';
   controllers: [AppController],
   providers: [
     AppService,
+    /* Apply global validation pipes here instead of in main.ts (for e2e testing purposes) */
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
@@ -30,4 +33,15 @@ import { Report } from './reports/report.entity';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  /* Apply global middleware here instead of in main.ts (for e2e testing purposes) */
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(
+        cookieSession({
+          keys: ['asdfasdf'],
+        }),
+      )
+      .forRoutes('*');
+  }
+}
